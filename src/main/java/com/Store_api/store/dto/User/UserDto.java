@@ -1,6 +1,5 @@
-package com.Store_api.store.dto;
+package com.Store_api.store.dto.User;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

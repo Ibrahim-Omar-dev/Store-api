@@ -1,10 +1,7 @@
-package com.Store_api.store.dto;
+package com.Store_api.store.dto.Product;
 
-import com.Store_api.store.entities.Category;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.mapstruct.Mapper;
 
 import java.math.BigDecimal;
 
