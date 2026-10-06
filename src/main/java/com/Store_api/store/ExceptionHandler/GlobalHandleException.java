@@ -1,4 +1,4 @@
-package com.Store_api.store.Exception;
+package com.Store_api.store.ExceptionHandler;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

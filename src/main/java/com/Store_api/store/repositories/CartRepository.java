@@ -12,8 +12,7 @@ public interface CartRepository extends JpaRepository<Cart,UUID> {
     @Query("""
     SELECT c
     FROM Cart c
-    JOIN FETCH c.cartItems ci
-    JOIN FETCH ci.product
+    LEFT JOIN FETCH c.cartItems ci
     WHERE c.id = :cartId
 """)
     Optional<Cart> getCartWithItems(@Param("cartId") UUID cartId);

@@ -1,5 +1,7 @@
 package com.Store_api.store.controllers;
 import java.util.Map;
+
+import com.Store_api.store.Services.UserService;
 import com.Store_api.store.dto.User.ChangeUserPasswordDto;
 import com.Store_api.store.dto.User.RegisterUserRequest;
 import com.Store_api.store.dto.User.UpdateUserDto;
@@ -19,77 +21,44 @@ import java.util.Set;
 @AllArgsConstructor
 @RequestMapping("/user")
 public class UserController {
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final UserService userService;
     @GetMapping
     public Iterable<UserDto> getAll(
             @RequestParam(required = false, name = "sort") String sortBy) {
-        if (sortBy == null || !Set.of("email", "name").contains(sortBy)) {
-            sortBy = "name";
-        }
-
-        return userRepository.findAll(Sort.by(sortBy))
-                .stream()
-                .map(user -> userMapper.toDto(user))
-                .toList();
+        return userService.getAll(sortBy);
     }
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getOne(@PathVariable Long id)
     {
-        var user=userRepository.findById(id).orElse(null);
-        if(user == null)
-            return ResponseEntity.notFound().build();
-        return  ResponseEntity.ok(userMapper.toDto(user));
+        var userDto=userService.getOne(id);
+        return  ResponseEntity.ok(userDto);
     }
     @PostMapping
     public ResponseEntity<?> create( @Valid @RequestBody RegisterUserRequest request
            , UriComponentsBuilder  builder)
     {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("email", "Email already exists"));
-        }
-        var user= userMapper.toEntity(request);
-        userRepository.save(user);
-        var userDto=userMapper.toDto(user);
-        var uri = builder.path("/user/{id}").buildAndExpand(user.getId()).toUri();
+        var userDto=userService.create(request);
+        var uri = builder.path("/user/{id}").buildAndExpand(userDto.getId()).toUri();
         return ResponseEntity.created(uri).body(userDto);
     }
     @PatchMapping
     public ResponseEntity<UserDto> update(@RequestBody UpdateUserDto request, @RequestParam Long id)
     {
-        var user=userRepository.findById(id).orElse(null);
-        if (user == null)
-            return ResponseEntity.notFound().build();
-
-        userMapper.update(request,user);
-        userRepository.save(user);
-
-        return ResponseEntity.ok(userMapper.toDto(user));
+        var userDto=userService.update(request,id);
+        return ResponseEntity.ok(userDto);
     }
     @DeleteMapping
-    public ResponseEntity delete(@RequestParam Long id)
+    public ResponseEntity<Void> delete(@RequestParam Long id)
     {
-        var user=userRepository.findById(id).orElse(null);
-        if (user == null)
-            return ResponseEntity.notFound().build();
-        userRepository.delete(user);
+        userService.delete(id);
         return ResponseEntity.noContent().build();
 
     }
     @PostMapping("/{id}/changing-password")
-    public ResponseEntity<Void> changePassword(@PathVariable Long id,
-                                             @RequestBody ChangeUserPasswordDto request)
-    {
-        var user=userRepository.findById(id).orElse(null);
-        if (user == null)
-            return ResponseEntity.notFound().build();
-
-        if (!user.getPassword().equals(request.getOldPassword()))
-            return ResponseEntity.badRequest().build();
-        user.setPassword(request.getNewPassword());
-        userRepository.save(user);
+    public ResponseEntity<Void> changePassword(
+            @PathVariable Long id,
+            @RequestBody ChangeUserPasswordDto request) {
+        userService.changePassword(id, request);
         return ResponseEntity.noContent().build();
     }
-
 }
