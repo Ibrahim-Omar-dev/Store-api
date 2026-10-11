@@ -1,4 +1,8 @@
 package com.Store_api.store.Exception;
 
 public class UnAuthorizationException extends RuntimeException{
+    public UnAuthorizationException()
+    {
+        super("Unauthorized");
+    }
 }

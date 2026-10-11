@@ -1,6 +1,7 @@
 package com.Store_api.store.ExceptionHandler;
 
 import com.Store_api.store.Exception.InvalidPasswordException;
+import com.Store_api.store.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,10 +12,10 @@ import java.util.Map;
 @ControllerAdvice
 public class InvalidPasswordExceptionHandling {
     @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<Map<String,String>> HandleInvalidPassword()
+    public ResponseEntity<ErrorDto> HandleInvalidPassword(Exception ex)
     {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                Map.of("error", "Invalid Password")
+                new ErrorDto(ex.getMessage())
         );
     }
 }
