@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.cache.spi.support.AbstractReadWriteAccess;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -65,5 +66,9 @@ public class Cart {
     public void clear()
     {
         cartItems.clear();
+    }
+    public boolean isEmpty()
+    {
+        return cartItems.isEmpty();
     }
 }

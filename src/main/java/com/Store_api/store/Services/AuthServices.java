@@ -7,6 +7,7 @@ import com.Store_api.store.Exception.UserNotFoundException;
 import com.Store_api.store.dto.Auth.JwtResponse;
 import com.Store_api.store.dto.Auth.LoginRequset;
 import com.Store_api.store.dto.User.UserDto;
+import com.Store_api.store.entities.User;
 import com.Store_api.store.mapper.UserMapper;
 import com.Store_api.store.repositories.AuthRepository;
 import com.Store_api.store.repositories.UserRepository;
@@ -56,9 +57,7 @@ public class AuthServices {
     }
     public UserDto getUser()
     {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        var userId=(Long)authentication.getPrincipal();
-        var user=userRepository.findById(userId).orElse(null);
+        var user=getCurrentUser();
         if(user==null)
         {
             throw new EmailNotFoundException();
@@ -78,5 +77,11 @@ public class AuthServices {
         var accessToken = jwtServices.generateAccessToken(user);
 
         return accessToken.toString();
+    }
+    public User getCurrentUser()
+    {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var userId=(Long)authentication.getPrincipal();
+        return userRepository.findById(userId).orElse(null);
     }
 }
