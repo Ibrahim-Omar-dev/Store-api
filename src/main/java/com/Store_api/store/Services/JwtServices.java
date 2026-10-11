@@ -5,7 +5,6 @@ import com.Store_api.store.Enum.Role;
 import com.Store_api.store.dto.Auth.JwtResponse;
 import com.Store_api.store.entities.User;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -19,35 +18,36 @@ import java.util.Date;
 @Data
 public class JwtServices {
     private final JwtConfig jwtConfig;
-    public String generateAccessToken(User user) {
+    public Jwt generateAccessToken(User user) {
         final long tokenExpiration=jwtConfig.getAccessTokenExpiration() ;
         return generateToken(user,tokenExpiration);
     }
-    public String generateRefreshToken(User user) {
+    public Jwt generateRefreshToken(User user) {
         final long tokenExpiration=jwtConfig.getRefreshTokenExpiration();
         return generateToken(user,tokenExpiration);
     }
-    private String generateToken(User user,long expiration) {
-        return Jwts.builder()
+    private Jwt generateToken(User user, long expiration) {
+        var claims= Jwts.claims()
                 .subject(user.getId().toString())
-                .claim("email", user.getEmail())
-                .claim("name", user.getName())
-                .claim("role", user.getRole())
+                .add("email", user.getEmail())
+                .add("name", user.getName())
+                .add("role", user.getRole())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * expiration))
-                .signWith(jwtConfig.getSecretKey())
-                .compact();
-    }
+                .build();
 
-    public boolean validateToken(String token) {
+        return new Jwt(claims,jwtConfig.getSecretKey());
+    }
+    public Jwt parseToken(String token) {
         try {
             var claims = getClaims(token);
-            return claims.getExpiration().after(new Date());
+            return new Jwt(claims,jwtConfig.getSecretKey());
         }
         catch (JwtException e) {
-            return false;
+            return null;
         }
     }
+
     private Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(jwtConfig.getSecretKey())
@@ -55,10 +55,5 @@ public class JwtServices {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-    public Long getUserIdFromToken(String token) {
-        return Long.valueOf(getClaims(token).getSubject());
-    }
-    public Role getRoleFromToken(String token) {
-        return Role.valueOf(getClaims(token).get("role", String.class));
-    }
+
 }

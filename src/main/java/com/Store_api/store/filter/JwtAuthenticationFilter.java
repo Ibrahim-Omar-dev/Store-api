@@ -32,16 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         var token = authHeader.replace("Bearer ", "");
-        if (!jwtServices.validateToken(token))
+       var jwt= jwtServices.parseToken(token);
+        if (jwt.isExpired() || jwt==null)
         {
             filterChain.doFilter(request, response);
             return;
         }
-        var role=jwtServices.getRoleFromToken(token);
         var authentication=new UsernamePasswordAuthenticationToken(
-                jwtServices.getUserIdFromToken(token),
+                jwt.getUserId(),
                 null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                List.of(new SimpleGrantedAuthority("ROLE_" + jwt.getRole().name()))
         );
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
