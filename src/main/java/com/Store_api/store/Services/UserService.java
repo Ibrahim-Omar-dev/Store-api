@@ -1,5 +1,6 @@
 package com.Store_api.store.Services;
 
+import com.Store_api.store.Enum.Role;
 import com.Store_api.store.Exception.EmailAlreadyExistsException;
 import com.Store_api.store.Exception.InvalidPasswordException;
 import com.Store_api.store.Exception.UserNotFoundException;
@@ -11,13 +12,18 @@ import com.Store_api.store.mapper.UserMapper;
 import com.Store_api.store.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Set;
 @AllArgsConstructor
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper  userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -45,6 +51,7 @@ public class UserService {
 
         var user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.USER);
         userRepository.save(user);
         return userMapper.toDto(user);
     }
@@ -72,5 +79,16 @@ public class UserService {
         }
 
         user.setPassword(request.getNewPassword());
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        var user=userRepository.findByEmail(email).orElseThrow(
+                ()->new UserNotFoundException());
+        return new User(
+                user.getEmail(),
+                user.getPassword(),
+                Collections.emptyList()
+        );
     }
 }

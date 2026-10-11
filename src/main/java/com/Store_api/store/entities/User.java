@@ -1,5 +1,6 @@
 package com.Store_api.store.entities;
 
+import com.Store_api.store.Enum.Role;
 import com.Store_api.store.entities.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,17 +20,16 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @Column(name = "name")
     private String name;
 
-    @Column(name = "email")
     private String email;
 
-    @Column(name = "password")
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @Builder.Default
